@@ -84,7 +84,7 @@
  * @brief The FW main module
  */
 
-void init_btn()
+void init_LED()
 {
   GPIO_InitTypeDef GPIO_InitStruct;
 
@@ -95,13 +95,27 @@ void init_btn()
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 }
 
+void init_Signal_In()
+{
+  GPIO_InitTypeDef GPIO_InitStruct;
+
+  GPIO_InitStruct.Pin = GPIO_PIN_4;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  // GPIO_InitStruct.Speed = GPIO_SPEED_FAST;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+  HAL_NVIC_SetPriority(EXTI4_IRQn, 0x0F, 0x00);
+  HAL_NVIC_EnableIRQ(EXTI4_IRQn);
+}
+
 int main(void)
 {
   /* NUCLEO board initialization */
   NUCLEO_Board_Init();
 
   /* X-NUCLEO-IHM02A1 initialization */
-  BSP_Init();
+  // BSP_Init();
 
 #ifdef NUCLEO_USE_USART
   /* Transmit the initial message to the PC via UART */
@@ -125,11 +139,27 @@ int main(void)
   /*Initialize the motor parameters */
   Motor_Param_Reg_Init();
 
-  init_btn();
-  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0, GPIO_PIN_SET);
+  init_LED();
+  init_Signal_In();
 
-  volatile GPIO_PinState btn_val = GPIO_PIN_RESET;
-  volatile uint8_t *btn_val_str = "";
+  // while (1)
+  // {
+  //   while (!(HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_1)))
+  //   {
+  //   };
+  //   HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0, GPIO_PIN_SET);
+  //   HAL_Delay(5);
+  //   HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0, GPIO_PIN_RESET);
+  //   while ((HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_1)))
+  //   {
+  //   };
+  // };
+
+  // HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0, GPIO_PIN_SET);
+
+  // volatile GPIO_PinState btn_val = GPIO_PIN_RESET;
+  // volatile uint8_t *btn_val_str = "";
+
   /* Infinite loop */
   while (1)
   {
@@ -138,7 +168,6 @@ int main(void)
 
     // HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_0);
     // HAL_Delay(500);
-    // btn_val = HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_0);
   }
 #endif
 }
