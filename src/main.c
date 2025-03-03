@@ -37,6 +37,7 @@
 #include "example.h"
 #include "example_usart.h"
 #include "L6470.h"
+#include "GPIO.h"
 
 /**
  * @defgroup   MotionControl
