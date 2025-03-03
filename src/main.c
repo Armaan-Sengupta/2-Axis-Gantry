@@ -74,6 +74,25 @@
 #error "Please define "NUCLEO_USE_USART" in "stm32fxxx_x-nucleo-ihm02a1.h"!"
 #endif
 
+void init_switches()
+{
+
+  GPIO_Init(GPIOA, GPIO_PIN_10, GPIO_MODE_IT_RISING_FALLING, GPIO_NOPULL, GPIO_SPEED_FREQ_MEDIUM);
+  GPIO_Init(GPIOA, GPIO_PIN_8, GPIO_MODE_IT_RISING_FALLING, GPIO_NOPULL, GPIO_SPEED_FREQ_MEDIUM);
+  GPIO_Init(GPIOA, GPIO_PIN_9, GPIO_MODE_IT_RISING_FALLING, GPIO_NOPULL, GPIO_SPEED_FREQ_MEDIUM);
+  GPIO_Init(GPIOB, GPIO_PIN_4, GPIO_MODE_IT_RISING_FALLING, GPIO_NOPULL, GPIO_SPEED_FREQ_MEDIUM);
+
+  __HAL_RCC_GPIOA_CLK_ENABLE();
+  __HAL_RCC_GPIOB_CLK_ENABLE();
+
+  HAL_NVIC_SetPriority(EXTI9_5_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
+  HAL_NVIC_SetPriority(EXTI15_10_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
+  HAL_NVIC_SetPriority(EXTI4_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(EXTI4_IRQn);
+}
+
 /**
  * @}
  */
@@ -89,6 +108,7 @@ int main(void)
 
   /* X-NUCLEO-IHM02A1 initialization */
   BSP_Init();
+  init_switches();
 
 #ifdef NUCLEO_USE_USART
   /* Transmit the initial message to the PC via UART */
@@ -114,7 +134,7 @@ int main(void)
   while (1)
   {
     /* Check if any Application Command for L6470 has been entered by USART */
-    // USART_CheckAppCmd();
+    USART_CheckAppCmd();
     // L6470_Run(0, L6470_DIR_FWD_ID, 5000);
     // L6470_Run(1, L6470_DIR_FWD_ID, 5000);
     // HAL_Delay(2000);
@@ -125,12 +145,12 @@ int main(void)
     // L6470_HardStop(1);
     // HAL_Delay(2000);
 
-    L6470_Move(0, L6470_DIR_FWD_ID, 10000);
-    L6470_Move(1, L6470_DIR_FWD_ID, 10000);
-    HAL_Delay(10000);
-    L6470_Move(0, L6470_DIR_REV_ID, 10000);
-    L6470_Move(1, L6470_DIR_REV_ID, 10000);
-    HAL_Delay(10000);
+    // L6470_Move(0, L6470_DIR_FWD_ID, 10000);
+    // L6470_Move(1, L6470_DIR_FWD_ID, 10000);
+    // HAL_Delay(10000);
+    // L6470_Move(0, L6470_DIR_REV_ID, 10000);
+    // L6470_Move(1, L6470_DIR_REV_ID, 10000);
+    // HAL_Delay(10000);
   }
 #endif
 }
