@@ -27,3 +27,7 @@ bool move_axis(enum MOTORS motor_id, int32_t speed){
     L6470_Run(motor_id, direction_id, speed);
     return true;
 }
+
+void stop_motor(enum MOTORS motor_id){
+    L6470_HardStop(motor_id);
+}

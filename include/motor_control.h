@@ -19,7 +19,8 @@ enum MOTORS{
     MOTOR_Y
 };
 
-bool move_axis(AXIS_DIRECTION axis_dir, uint32_t speed);
+bool move_axis(enum MOTORS motor_id, int32_t speed);
+void stop_motor(enum MOTORS motor_id);
 
 void init_system(); //check for edge case of switch being pressed upon program startup, and set permited directions accordingly
 
