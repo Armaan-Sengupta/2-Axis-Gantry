@@ -1,5 +1,8 @@
 #include "switch_handler.h"
 
+const uint32_t debounce_delay_loops = 50000;
+
+
 void handle(uint8_t pin)
 {    
     //assume there is a bounce window and skip past it

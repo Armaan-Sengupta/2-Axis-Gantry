@@ -5,7 +5,7 @@
 #include "stdint.h"
 #include "L6470.h"
 
-extern permited_directions;
+extern bool permited_directions[4];
 
 typedef enum{
     MOTOR_X_FORWARD,
