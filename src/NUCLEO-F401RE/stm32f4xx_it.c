@@ -104,8 +104,8 @@ void EXTI15_10_IRQHandler(void)
 {
   if (__HAL_GPIO_EXTI_GET_IT(GPIO_PIN_10) != RESET)
   {
-    __HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_10);
     handle(10);
+    __HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_10);
   }
 }
 
@@ -113,13 +113,13 @@ void EXTI9_5_IRQHandler(void)
 {
   if (__HAL_GPIO_EXTI_GET_IT(GPIO_PIN_9) != RESET)
   {
-    __HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_9);
     handle(9);
+    __HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_9);
   }
   else if (__HAL_GPIO_EXTI_GET_IT(GPIO_PIN_8) != RESET)
   {
-    __HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_8);
     handle(8);
+    __HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_8);
   }
 }
 
@@ -127,8 +127,8 @@ void EXTI4_IRQHandler(void)
 {
   if (__HAL_GPIO_EXTI_GET_IT(GPIO_PIN_4) != RESET)
   {
-    __HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_4);
     handle(4);
+    __HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_4);
   }
 }
 
