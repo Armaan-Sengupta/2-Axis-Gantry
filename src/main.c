@@ -2,6 +2,7 @@
 #include "example_usart.h"
 #include "L6470.h"
 #include "GPIO.h"
+#include <stdio.h>
 
 // #define MICROSTEPPING_MOTOR_EXAMPLE        //!< Uncomment to performe the standalone example
 // #define MICROSTEPPING_MOTOR_USART_EXAMPLE //!< Uncomment to performe the USART example
@@ -52,12 +53,22 @@ int main(void)
 __HAL_RCC_GPIOB_CLK_ENABLE();
   GPIO_Init(GPIOB, GPIO_PIN_0, GPIO_MODE_ANALOG, GPIO_NOPULL, GPIO_SPEED_FREQ_LOW); //PB 0 is ADC1_IN8 from page 40 of the datasheet
   
-  volatile uint32_t adc_value = 0;
-  /* Infinite loop */
-  while (1){
-    HAL_ADC_Start(&hadc1);  // Start conversion
-    HAL_ADC_PollForConversion(&hadc1, HAL_MAX_DELAY);  // Wait for conversion
-    adc_value = HAL_ADC_GetValue(&hadc1);  // Get ADC value
+  char output_str[100];
+  uint32_t adc_value = 0;
+  double voltage = 0.0;
+  const double vref = 3.3;
+
+  while (1)
+  {
+    HAL_ADC_Start(&hadc1);
+    HAL_ADC_PollForConversion(&hadc1, HAL_MAX_DELAY);
+    adc_value = HAL_ADC_GetValue(&hadc1);
+    voltage = ((float)adc_value / 4095.0) * vref;
+
+    sprintf(output_str, ">ADC Value:%lu,Voltage:%.3f V\r\n", adc_value, voltage);
+    HAL_UART_Transmit(&huart2, (uint8_t *)output_str, strlen(output_str), HAL_MAX_DELAY);
+
+    HAL_Delay(500);
   }
 
 #elif defined(MICROSTEPPING_MOTOR_EXAMPLE)
