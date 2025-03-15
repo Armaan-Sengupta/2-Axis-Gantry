@@ -401,17 +401,17 @@ void MX_ADC1_Init(void)
 
     /**Configure the global features of the ADC (Clock, Resolution, Data Alignment and number of conversion) 
     */
- // hadc1.Instance = ADC1;
- // hadc1.Init.ClockPrescaler = ;
- // hadc1.Init.Resolution = ;
- // hadc1.Init.ScanConvMode = ;
- // hadc1.Init.ContinuousConvMode = ;
- // hadc1.Init.DiscontinuousConvMode = ;
- // hadc1.Init.ExternalTrigConvEdge = ;
- // hadc1.Init.DataAlign = ;
- // hadc1.Init.NbrOfConversion = ;
- // hadc1.Init.DMAContinuousRequests = ;
- // hadc1.Init.EOCSelection = ;
+  hadc1.Instance = ADC1;
+  hadc1.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV4;
+  hadc1.Init.Resolution = ADC_RESOLUTION_12B;
+  hadc1.Init.ScanConvMode = DISABLE;
+  hadc1.Init.ContinuousConvMode = ENABLE;
+  hadc1.Init.DiscontinuousConvMode = DISABLE;
+  hadc1.Init.ExternalTrigConv = ADC_SOFTWARE_START;
+  hadc1.Init.DataAlign = ADC_DATAALIGN_RIGHT;
+  hadc1.Init.NbrOfConversion = 1;
+  hadc1.Init.DMAContinuousRequests = DISABLE;
+  hadc1.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
   HAL_ADC_Init(&hadc1);
 
     /**Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time. 
@@ -420,6 +420,8 @@ void MX_ADC1_Init(void)
   sConfig.Rank = 1;
   sConfig.SamplingTime = ADC_SAMPLETIME_3CYCLES;
   HAL_ADC_ConfigChannel(&hadc1, &sConfig);
+
+  __HAL_RCC_ADC1_CLK_ENABLE();
 
 }
 
@@ -451,6 +453,9 @@ void NUCLEO_Board_Init(void)
   
   /* Initialize the SPI used by the X-NUCLEO-IHM02A1 */
   MX_SPI_Init();
+
+  //Initialize ADC
+  MX_ADC1_Init();
   
 #ifdef NUCLEO_USE_USART
   /* Initialize the USART peripheral */

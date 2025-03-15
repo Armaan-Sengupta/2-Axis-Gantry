@@ -5,6 +5,7 @@
 
 // #define MICROSTEPPING_MOTOR_EXAMPLE        //!< Uncomment to performe the standalone example
 // #define MICROSTEPPING_MOTOR_USART_EXAMPLE //!< Uncomment to performe the USART example
+#define ADC_EXAMPLE //!< Uncomment to performe the ADC example
 #if ((defined(MICROSTEPPING_MOTOR_EXAMPLE)) && (defined(MICROSTEPPING_MOTOR_USART_EXAMPLE)))
 #error "Please select an option only!"
 #endif
@@ -46,7 +47,20 @@ int main(void)
   USART_Transmit(&huart2, " X-CUBE-SPN2 v1.0.0\n\r");
 #endif
 
-#if defined(MICROSTEPPING_MOTOR_EXAMPLE)
+#if defined(ADC_EXAMPLE)
+
+__HAL_RCC_GPIOB_CLK_ENABLE();
+  GPIO_Init(GPIOB, GPIO_PIN_0, GPIO_MODE_ANALOG, GPIO_NOPULL, GPIO_SPEED_FREQ_LOW); //PB 0 is ADC1_IN8 from page 40 of the datasheet
+  
+  volatile uint32_t adc_value = 0;
+  /* Infinite loop */
+  while (1){
+    HAL_ADC_Start(&hadc1);  // Start conversion
+    HAL_ADC_PollForConversion(&hadc1, HAL_MAX_DELAY);  // Wait for conversion
+    adc_value = HAL_ADC_GetValue(&hadc1);  // Get ADC value
+  }
+
+#elif defined(MICROSTEPPING_MOTOR_EXAMPLE)
   /* Perform a batch commands for X-NUCLEO-IHM02A1 */
   MicrosteppingMotor_Example_01();
 
