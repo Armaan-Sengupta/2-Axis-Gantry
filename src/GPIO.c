@@ -15,9 +15,10 @@ void GPIO_Write(GPIO_TypeDef *GPIOx, uint16_t pin, bool state)
     HAL_GPIO_WritePin(GPIOx, pin, (GPIO_PinState)state);
 }
 
-GPIO_PinState GPIO_Read(GPIO_TypeDef *GPIOx, uint16_t pin)
+bool GPIO_Read(GPIO_TypeDef *GPIOx, uint16_t pin)
 {
-    return HAL_GPIO_ReadPin(GPIOx, pin);
+    if (HAL_GPIO_ReadPin(GPIOx, pin) == GPIO_PIN_SET) return true;
+    else return false;
 }
 
 void GPIO_Toggle(GPIO_TypeDef *GPIOx, uint16_t pin)
