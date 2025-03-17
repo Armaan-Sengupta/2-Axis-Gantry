@@ -8,5 +8,6 @@
 #include "motor_control.h"
 
 void handle(uint8_t pin);
+bool handle_on_axis(AXIS_DIRECTION axis);
 
 #endif

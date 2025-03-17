@@ -6,7 +6,7 @@
 
 void GPIO_Init(GPIO_TypeDef *GPIOx, uint16_t pin, uint32_t mode, uint32_t pull, uint32_t speed);
 void GPIO_Write(GPIO_TypeDef *GPIOx, uint16_t pin, bool state);
-GPIO_PinState GPIO_Read(GPIO_TypeDef *GPIOx, uint16_t pin);
+bool GPIO_Read(GPIO_TypeDef *GPIOx, uint16_t pin);
 void GPIO_Toggle(GPIO_TypeDef *GPIOx, uint16_t pin);
 
 #endif // GPIO_H
