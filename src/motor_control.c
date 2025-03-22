@@ -21,7 +21,7 @@ AXIS_DIRECTION get_axis_dir(enum MOTORS motor_id, int32_t speed){
 
 bool move_axis(enum MOTORS motor_id, int32_t speed){
     AXIS_DIRECTION motor_id_dir = get_axis_dir(motor_id, speed);
-    handle_on_axis(motor_id_dir);
+    check_axis_limit_switch(motor_id_dir);
     if (!permited_directions[motor_id_dir]){
         stop_motor(motor_id);
         return false;
