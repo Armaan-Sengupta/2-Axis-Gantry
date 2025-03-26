@@ -8,7 +8,8 @@
 // #define MICROSTEPPING_MOTOR_EXAMPLE        //!< Uncomment to performe the standalone example
 // #define MICROSTEPPING_MOTOR_USART_EXAMPLE //!< Uncomment to performe the USART example
 // #define ADC_EXAMPLE //!< Uncomment to performe the ADC example
-#define LIIMIT_SWITCHES_EXAMPLE //!< Uncomment to performe the Limit Switches example
+// #define LIIMIT_SWITCHES_EXAMPLE //!< Uncomment to performe the Limit Switches example
+#define ARMAAN_MOTOR_EXAMPLE //! Uncomment to perform this test to see if motor wiring is correct
 #if ((defined(MICROSTEPPING_MOTOR_EXAMPLE)) && (defined(MICROSTEPPING_MOTOR_USART_EXAMPLE)))
 #error "Please select an option only!"
 #endif
@@ -21,8 +22,7 @@ void init_switches()
 
   GPIO_Init(GPIOA, GPIO_PIN_10, GPIO_MODE_IT_RISING_FALLING, GPIO_PULLUP, GPIO_SPEED_FREQ_MEDIUM); //works
   GPIO_Init(GPIOA, GPIO_PIN_8, GPIO_MODE_IT_RISING_FALLING, GPIO_PULLUP, GPIO_SPEED_FREQ_MEDIUM);  //works
-  GPIO_Init(GPIOA, GPIO_PIN_9, GPIO_MODE_IT_RISING_FALLING, GPIO_PULLUP, GPIO_SPEED_FREQ_MEDIUM);  //works
-  GPIO_Init(GPIOB, GPIO_PIN_4, GPIO_MODE_IT_RISING_FALLING, GPIO_PULLUP, GPIO_SPEED_FREQ_MEDIUM); //works
+  GPIO_Init(GPIOA, GPIO_PIN_9, GPIO_MODE_IT_RISING_FALLING, GPIO_PULLUP, GPIO_SPEED_FREQ_MEDIUM); //works
 
   __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
@@ -35,11 +35,20 @@ void init_switches()
   HAL_NVIC_EnableIRQ(EXTI4_IRQn);
 }
 
-uint32_t get_adc_value(){
+uint32_t get_adc_value(uint32_t channel) {
+  ADC_ChannelConfTypeDef sConfig = {0};
+
+  sConfig.Channel = channel;
+  sConfig.Rank = 1;
+  sConfig.SamplingTime = ADC_SAMPLETIME_3CYCLES;
+
+  HAL_ADC_ConfigChannel(&hadc1, &sConfig);  // <<< This is what tells ADC which pin/channel to use
+
   HAL_ADC_Start(&hadc1);
   HAL_ADC_PollForConversion(&hadc1, HAL_MAX_DELAY);
   return HAL_ADC_GetValue(&hadc1);
 }
+
 
 int main(void)
 {
@@ -65,11 +74,12 @@ int main(void)
   uint32_t adc_value = 0;
   double voltage = 0.0;
   const double vref = 3.3;
+  const double offset = 0.034;
 
   while (1)
   {
     adc_value = get_adc_value();
-    voltage = ((float)adc_value / 4095.0) * vref;
+    voltage = (((float)adc_value / 4095.0) * vref)-offset;
 
     sprintf(output_str, ">ADC Value:%lu,Voltage:%.3f V\r\n", adc_value, voltage);
     HAL_UART_Transmit(&huart2, (uint8_t *)output_str, strlen(output_str), HAL_MAX_DELAY);
@@ -99,7 +109,7 @@ int main(void)
   const uint32_t max_adc_value = 4095; // 12-bit ADC
   const uint32_t mid_adc_value = max_adc_value / 2; // Midpoint
   const int32_t max_motor_speed = 10000; // Max motor speed in steps per second
-  const int32_t deadband_threshold = 500; // Adjust this value as needed
+  const int32_t deadband_threshold = 1; // Adjust this value as needed
 
   while (1)
   {
@@ -122,6 +132,58 @@ int main(void)
 
     // HAL_Delay(500);
   }
+
+#elif defined(ARMAAN_MOTOR_EXAMPLE)
+  /* Fill the L6470_DaisyChainMnemonic structure */
+  Fill_L6470_DaisyChainMnemonic();
+
+  /*Initialize the motor parameters */
+  Motor_Param_Reg_Init();
+
+
+  __HAL_RCC_GPIOB_CLK_ENABLE();
+  __HAL_RCC_GPIOC_CLK_ENABLE();
+  GPIO_Init(GPIOB, GPIO_PIN_0, GPIO_MODE_ANALOG, GPIO_NOPULL, GPIO_SPEED_FREQ_MEDIUM);
+  GPIO_Init(GPIOC, GPIO_PIN_1, GPIO_MODE_ANALOG, GPIO_NOPULL, GPIO_SPEED_FREQ_MEDIUM);
+
+  char output_str[100];
+  uint32_t adc_value_PB0 = 0;
+  uint32_t adc_value_PC1 = 0;
+  uint32_t adc_mid_point = 2048.0;
+
+  while(1)
+  {
+
+    adc_value_PB0 = (float)get_adc_value(ADC_CHANNEL_8);
+    adc_value_PC1 = (float)get_adc_value(ADC_CHANNEL_11);
+
+    sprintf(output_str, ">ADC B:%ld\n", adc_value_PB0, "ADC C: %ld \n", adc_value_PC1);
+    HAL_UART_Transmit(&huart2, (uint8_t *)output_str, strlen(output_str), HAL_MAX_DELAY);
+
+
+    if ((adc_value_PB0) > adc_mid_point) {
+      L6470_Run(0, L6470_DIR_FWD_ID, 8000);
+    } else {
+      L6470_Run(0, L6470_DIR_REV_ID, 8000);
+    }
+
+    if ((adc_value_PC1) > adc_mid_point) {
+      L6470_Run(1, L6470_DIR_FWD_ID, 8000);
+    } else {
+      L6470_Run(1, L6470_DIR_REV_ID, 8000);
+    }
+
+
+
+  }
+
+
+  // Simple test to verify motor moves
+  // L6470_Run(1, L6470_DIR_FWD_ID, 5000);
+  // L6470_Run(0, L6470_DIR_FWD_ID, 5000);
+  // HAL_Delay(3000);
+  // L6470_HardStop(1);
+  // L6470_HardStop(0);
 
 
 #elif defined(MICROSTEPPING_MOTOR_EXAMPLE)
