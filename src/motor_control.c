@@ -17,6 +17,7 @@ AXIS_DIRECTION get_axis_dir(enum MOTORS motor_id, int32_t speed){
     else if (motor_id == MOTOR_X && direction_id == L6470_DIR_REV_ID) return MOTOR_X_BACKWARD;
     else if (motor_id == MOTOR_Y && direction_id == L6470_DIR_FWD_ID) return MOTOR_Y_FORWARD;
     else if (motor_id == MOTOR_Y && direction_id == L6470_DIR_REV_ID) return MOTOR_Y_BACKWARD;
+
 }
 
 bool move_axis(enum MOTORS motor_id, int32_t speed){

@@ -8,8 +8,8 @@
 // #define MICROSTEPPING_MOTOR_EXAMPLE        //!< Uncomment to performe the standalone example
 // #define MICROSTEPPING_MOTOR_USART_EXAMPLE //!< Uncomment to performe the USART example
 // #define ADC_EXAMPLE //!< Uncomment to performe the ADC example
-// #define LIIMIT_SWITCHES_EXAMPLE //!< Uncomment to performe the Limit Switches example
-#define ARMAAN_MOTOR_EXAMPLE //! Uncomment to perform this test to see if motor wiring is correct
+#define LIIMIT_SWITCHES_EXAMPLE //!< Uncomment to performe the Limit Switches example
+// #define ARMAAN_MOTOR_EXAMPLE //! Uncomment to perform this test to see if motor wiring is correct
 #if ((defined(MICROSTEPPING_MOTOR_EXAMPLE)) && (defined(MICROSTEPPING_MOTOR_USART_EXAMPLE)))
 #error "Please select an option only!"
 #endif
@@ -37,17 +37,19 @@ void init_switches()
 
 uint32_t get_adc_value(uint32_t channel) {
   ADC_ChannelConfTypeDef sConfig = {0};
+  
 
   sConfig.Channel = channel;
   sConfig.Rank = 1;
   sConfig.SamplingTime = ADC_SAMPLETIME_3CYCLES;
 
-  HAL_ADC_ConfigChannel(&hadc1, &sConfig);  // <<< This is what tells ADC which pin/channel to use
+  HAL_ADC_ConfigChannel(&hadc1, &sConfig);  // This is what tells ADC which pin/channel to use
 
   HAL_ADC_Start(&hadc1);
   HAL_ADC_PollForConversion(&hadc1, HAL_MAX_DELAY);
   return HAL_ADC_GetValue(&hadc1);
 }
+
 
 
 int main(void)
@@ -98,12 +100,18 @@ int main(void)
   init_switch_directions();
 
   __HAL_RCC_GPIOB_CLK_ENABLE();
+  __HAL_RCC_GPIOC_CLK_ENABLE();
+
   GPIO_Init(GPIOB, GPIO_PIN_0, GPIO_MODE_ANALOG, GPIO_NOPULL, GPIO_SPEED_FREQ_LOW); //PB 0 is ADC1_IN8 from page 40 of the datasheet
-  
+  GPIO_Init(GPIOC, GPIO_PIN_1, GPIO_MODE_ANALOG, GPIO_NOPULL, GPIO_SPEED_FREQ_LOW); //PC 1 is ADC1_IN11
+
+
   char output_str[100];
-  uint32_t adc_value = 0;
+  uint32_t adc_value_pot_one = 0;
+  uint32_t adc_value_pot_two = 0;
   double voltage = 0.0;
-  int32_t motor_speed = 0;
+  int32_t motor_speed_one = 0;
+  int32_t motor_speed_two = 0;
 
   const double vref = 3.3;
   const uint32_t max_adc_value = 4095; // 12-bit ADC
@@ -113,24 +121,34 @@ int main(void)
 
   while (1)
   {
-    adc_value = get_adc_value();
-    voltage = ((float)adc_value / 4095.0) * vref;
-    int32_t raw_motor_speed = (int32_t)((((int32_t)adc_value) - ((int32_t)mid_adc_value)) * max_motor_speed / (double)mid_adc_value);
+    adc_value_pot_one = get_adc_value(ADC_CHANNEL_8);
+    adc_value_pot_two = get_adc_value(ADC_CHANNEL_11);
 
-  // Apply deadband
-  if (abs(adc_value - mid_adc_value) < deadband_threshold) {
-      motor_speed = 0;
-  } else {
-      motor_speed = raw_motor_speed;
-  }
+    int32_t raw_motor_speed_one = (int32_t)((((int32_t)adc_value_pot_one) - ((int32_t)mid_adc_value)) * max_motor_speed / (double)mid_adc_value);
+    int32_t raw_motor_speed_two = (int32_t)((((int32_t)adc_value_pot_two) - ((int32_t)mid_adc_value)) * max_motor_speed / (double)mid_adc_value);
+ 
+    // Apply deadband
+    if (abs(adc_value_pot_one - mid_adc_value) < deadband_threshold) {
+        motor_speed_one = 0;
+    } else {
+        motor_speed_one = raw_motor_speed_one;
+    }
 
-    move_axis(MOTOR_X, motor_speed); //motor x is base, forward in x is away from the motor
-    move_axis(MOTOR_Y, motor_speed); //motor y is upper
+    if (abs(adc_value_pot_two - mid_adc_value) < deadband_threshold) {
+        motor_speed_two = 0;
+    } else {
+        motor_speed_two = raw_motor_speed_two;
+    }
 
-    sprintf(output_str, ">ADC:%lu,Speed:%ld\r\n", adc_value, motor_speed);
+    move_axis(MOTOR_X, motor_speed_one); //motor x is base, forward in x is away from the motor
+    move_axis(MOTOR_Y, motor_speed_two); //motor y is upper
+
+    sprintf(output_str, ">ADC1:%lu,Speed1:%ld\r\n", adc_value_pot_one, motor_speed_one);
+    sprintf(output_str + strlen(output_str), ">ADC2:%lu,Speed2:%ld\r\n", adc_value_pot_two, motor_speed_two);
+
     HAL_UART_Transmit(&huart2, (uint8_t *)output_str, strlen(output_str), HAL_MAX_DELAY);
 
-    // HAL_Delay(500);
+    HAL_Delay(500);
   }
 
 #elif defined(ARMAAN_MOTOR_EXAMPLE)
@@ -147,30 +165,36 @@ int main(void)
   GPIO_Init(GPIOC, GPIO_PIN_1, GPIO_MODE_ANALOG, GPIO_NOPULL, GPIO_SPEED_FREQ_MEDIUM);
 
   char output_str[100];
-  uint32_t adc_value_PB0 = 0;
-  uint32_t adc_value_PC1 = 0;
-  uint32_t adc_mid_point = 2048.0;
+  volatile uint32_t adc_value_PB0 = 0;
+  volatile uint32_t adc_value_PC1 = 0;
+  uint32_t adc_mid_point = 7.5;
+  uint32_t max_motor_speed = 10000;
 
   while(1)
   {
 
     adc_value_PB0 = (float)get_adc_value(ADC_CHANNEL_8);
     adc_value_PC1 = (float)get_adc_value(ADC_CHANNEL_11);
+  
 
-    sprintf(output_str, ">ADC B:%ld\n", adc_value_PB0, "ADC C: %ld \n", adc_value_PC1);
+
+    sprintf(output_str, ">ADC B: %ld | ", adc_value_PB0);
+    sprintf(output_str + strlen(output_str), "ADC C: %ld\n", adc_value_PC1);  
+    
     HAL_UART_Transmit(&huart2, (uint8_t *)output_str, strlen(output_str), HAL_MAX_DELAY);
+    
 
 
     if ((adc_value_PB0) > adc_mid_point) {
-      L6470_Run(0, L6470_DIR_FWD_ID, 8000);
+      L6470_Run(0, L6470_DIR_FWD_ID, 15000);
     } else {
-      L6470_Run(0, L6470_DIR_REV_ID, 8000);
+      L6470_Run(0, L6470_DIR_REV_ID, 15000);
     }
 
     if ((adc_value_PC1) > adc_mid_point) {
-      L6470_Run(1, L6470_DIR_FWD_ID, 8000);
+      L6470_Run(1, L6470_DIR_FWD_ID, 15000);
     } else {
-      L6470_Run(1, L6470_DIR_REV_ID, 8000);
+      L6470_Run(1, L6470_DIR_REV_ID, 15000);
     }
 
 
