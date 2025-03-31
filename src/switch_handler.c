@@ -47,16 +47,16 @@ void handle(uint8_t pin)
     switch (pin)
     {
     case 10:
-        if (check_axis_limit_switch(MOTOR_X_FORWARD)) stop_motor(MOTOR_X);
+        if (check_axis_limit_switch(MOTOR_X_FORWARD));
         break;
     case 8:
-        if (check_axis_limit_switch(MOTOR_X_BACKWARD)) stop_motor(MOTOR_X);
+        if (check_axis_limit_switch(MOTOR_X_BACKWARD));
         break;
     case 9:
-        if (check_axis_limit_switch(MOTOR_Y_FORWARD)) stop_motor(MOTOR_Y);
+        if (check_axis_limit_switch(MOTOR_Y_FORWARD));
         break;
     case 4:
-        if (check_axis_limit_switch(MOTOR_Y_BACKWARD)) stop_motor(MOTOR_Y);
+        if (check_axis_limit_switch(MOTOR_Y_BACKWARD));
         break;
     default:
         break;

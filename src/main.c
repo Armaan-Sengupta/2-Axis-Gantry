@@ -72,16 +72,17 @@ int main(void)
 
   __HAL_RCC_GPIOB_CLK_ENABLE();
   GPIO_Init(GPIOB, GPIO_PIN_0, GPIO_MODE_ANALOG, GPIO_NOPULL, GPIO_SPEED_FREQ_LOW); //PB 0 is ADC1_IN8 from page 40 of the datasheet
+  GPIO_Init(GPIOC, GPIO_PIN_1, GPIO_MODE_ANALOG, GPIO_NOPULL, GPIO_SPEED_FREQ_LOW); //PC 1 is ADC1_IN11
   
   char output_str[100];
   uint32_t adc_value = 0;
   double voltage = 0.0;
   const double vref = 3.3;
-  const double offset = 0.034;
+  const double offset = 0;
 
   while (1)
   {
-    adc_value = get_adc_value();
+    adc_value = get_adc_value(ADC_CHANNEL_11);
     voltage = (((float)adc_value / 4095.0) * vref)-offset;
 
     sprintf(output_str, ">ADC Value:%lu,Voltage:%.3f V\r\n", adc_value, voltage);
@@ -104,10 +105,10 @@ int main(void)
   __HAL_RCC_GPIOC_CLK_ENABLE();
 
   GPIO_Init(GPIOB, GPIO_PIN_0, GPIO_MODE_ANALOG, GPIO_NOPULL, GPIO_SPEED_FREQ_LOW); //PB 0 is ADC1_IN8 from page 40 of the datasheet
-  GPIO_Init(GPIOC, GPIO_PIN_1, GPIO_MODE_ANALOG, GPIO_NOPULL, GPIO_SPEED_FREQ_LOW); //PC 1 is ADC1_IN11
+  GPIO_Init(GPIOA, GPIO_PIN_1, GPIO_MODE_ANALOG, GPIO_NOPULL, GPIO_SPEED_FREQ_LOW); //PC 1 is ADC1_IN11
 
 
-  char output_str[100];
+  char output_str[200];
   uint32_t adc_value_pot_one = 0;
   uint32_t adc_value_pot_two = 0;
   double voltage = 0.0;
@@ -120,10 +121,13 @@ int main(void)
   const int32_t max_motor_speed = 10000; // Max motor speed in steps per second
   const int32_t deadband_threshold = 500; // Adjust this value as needed
 
+  bool motor_x_permitted = true;
+  bool motor_y_permitted = true;
+
   while (1)
   {
     adc_value_pot_one = get_adc_value(ADC_CHANNEL_8);
-    adc_value_pot_two = get_adc_value(ADC_CHANNEL_11);
+    adc_value_pot_two = get_adc_value(ADC_CHANNEL_1);
 
     int32_t raw_motor_speed_one = (int32_t)((((int32_t)adc_value_pot_one) - ((int32_t)mid_adc_value)) * max_motor_speed / (double)mid_adc_value);
     int32_t raw_motor_speed_two = (int32_t)((((int32_t)adc_value_pot_two) - ((int32_t)mid_adc_value)) * max_motor_speed / (double)mid_adc_value);
@@ -141,11 +145,12 @@ int main(void)
         motor_speed_two = raw_motor_speed_two;
     }
 
-    move_axis(MOTOR_X, motor_speed_one); //motor x is base, forward in x is away from the motor
-    move_axis(MOTOR_Y, motor_speed_two); //motor y is upper
+    motor_x_permitted = move_axis(MOTOR_X, motor_speed_one); //motor x is base, forward in x is away from the motor
+    motor_y_permitted = move_axis(MOTOR_Y, motor_speed_two); //motor y is upper
 
     sprintf(output_str, ">ADC1:%lu,Speed1:%ld\r\n", adc_value_pot_one, motor_speed_one);
     sprintf(output_str + strlen(output_str), ">ADC2:%lu,Speed2:%ld\r\n", adc_value_pot_two, motor_speed_two);
+    sprintf(output_str + strlen(output_str), ">MotorX:%d,MotorY:%d\r\n", motor_x_permitted, motor_y_permitted);
 
     HAL_UART_Transmit(&huart2, (uint8_t *)output_str, strlen(output_str), HAL_MAX_DELAY);
 
@@ -228,16 +233,16 @@ int main(void)
   while (1)
   {
     /* Check if any Application Command for L6470 has been entered by USART */
-    USART_CheckAppCmd();
-    // L6470_Run(0, L6470_DIR_FWD_ID, 5000);
-    // L6470_Run(1, L6470_DIR_FWD_ID, 5000);
-    // HAL_Delay(2000);
-    // L6470_Run(0, L6470_DIR_REV_ID, 5000);
-    // L6470_Run(1, L6470_DIR_REV_ID, 5000);
-    // HAL_Delay(2000);
-    // L6470_HardStop(0);
-    // L6470_HardStop(1);
-    // HAL_Delay(2000);
+    // USART_CheckAppCmd();
+    L6470_Run(0, L6470_DIR_FWD_ID, 5000);
+    L6470_Run(1, L6470_DIR_FWD_ID, 5000);
+    HAL_Delay(2000);
+    L6470_Run(0, L6470_DIR_REV_ID, 5000);
+    L6470_Run(1, L6470_DIR_REV_ID, 5000);
+    HAL_Delay(2000);
+    L6470_HardStop(0);
+    L6470_HardStop(1);
+    HAL_Delay(2000);
 
     // L6470_Move(0, L6470_DIR_FWD_ID, 10000);
     // L6470_Move(1, L6470_DIR_FWD_ID, 10000);
