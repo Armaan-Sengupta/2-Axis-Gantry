@@ -20,9 +20,10 @@
 void init_switches()
 {
 
-  GPIO_Init(GPIOA, GPIO_PIN_10, GPIO_MODE_IT_RISING_FALLING, GPIO_PULLUP, GPIO_SPEED_FREQ_MEDIUM); //works
-  GPIO_Init(GPIOA, GPIO_PIN_8, GPIO_MODE_IT_RISING_FALLING, GPIO_PULLUP, GPIO_SPEED_FREQ_MEDIUM);  //works
-  GPIO_Init(GPIOA, GPIO_PIN_9, GPIO_MODE_IT_RISING_FALLING, GPIO_PULLUP, GPIO_SPEED_FREQ_MEDIUM); //works
+  GPIO_Init(GPIOA, GPIO_PIN_10, GPIO_MODE_IT_RISING_FALLING, GPIO_PULLUP, GPIO_SPEED_FREQ_LOW); //works
+  GPIO_Init(GPIOA, GPIO_PIN_8, GPIO_MODE_IT_RISING_FALLING, GPIO_PULLUP, GPIO_SPEED_FREQ_LOW);  //works
+  GPIO_Init(GPIOA, GPIO_PIN_9, GPIO_MODE_IT_RISING_FALLING, GPIO_PULLUP, GPIO_SPEED_FREQ_LOW);  //works
+  GPIO_Init(GPIOB, GPIO_PIN_4, GPIO_MODE_IT_RISING_FALLING, GPIO_PULLUP, GPIO_SPEED_FREQ_LOW); //works
 
   __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
@@ -117,7 +118,7 @@ int main(void)
   const uint32_t max_adc_value = 4095; // 12-bit ADC
   const uint32_t mid_adc_value = max_adc_value / 2; // Midpoint
   const int32_t max_motor_speed = 10000; // Max motor speed in steps per second
-  const int32_t deadband_threshold = 1; // Adjust this value as needed
+  const int32_t deadband_threshold = 500; // Adjust this value as needed
 
   while (1)
   {
